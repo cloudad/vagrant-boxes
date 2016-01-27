@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "headless": "true",
+    "login_user": "user",
+    "login_pass": "live"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "headless": "{{ user `headless` }}",
+      "guest_os_type": "Ubuntu_64",
+      "guest_additions_mode": "disable",
+      "vboxmanage": [
+        ["modifyvm", "{{ .Name }}", "--bioslogodisplaytime", "0"],
+        ["modifyvm", "{{ .Name }}", "--biosbootmenu", "disabled"]
+      ],
+      "hard_drive_interface": "sata",
+      "disk_size": 51200,
+      "iso_checksum": "d1672114104edd0926c47e1b6af22072bfcaab976a2f7996499d4d7be77d4a04",
+      "iso_checksum_type": "sha256",
+      "iso_interface": "sata",
+      "iso_url": "http://cdimage.debian.org/debian-cd/8.2.0-live/amd64/iso-hybrid/debian-live-8.2.0-amd64-standard.iso",
+      "boot_command": [
+        "<enter><wait10><wait10>",
+        "user<enter>live<enter><wait>",
+        "wget -qO- http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh-daemon.sh|sudo sh<enter><wait>",
+        "exit<enter>"
+      ],
+      "boot_wait": "5s",
+      "ssh_username": "{{ user `login_user` }}",
+      "ssh_password": "{{ user `login_pass` }}",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "5s",
+      "http_directory": "setup/",
+      "output_directory": "packer_build/",
+      "shutdown_command": "echo '{{ user `login_pass` }}'|sudo -S /sbin/halt -h -p"
+    }
+  ]
+}
