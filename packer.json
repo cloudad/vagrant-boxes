@@ -12,7 +12,9 @@
       "guest_additions_mode": "disable",
       "vboxmanage": [
         ["modifyvm", "{{ .Name }}", "--bioslogodisplaytime", "0"],
-        ["modifyvm", "{{ .Name }}", "--biosbootmenu", "disabled"]
+        ["modifyvm", "{{ .Name }}", "--biosbootmenu", "disabled"],
+        ["modifyvm", "{{ .Name }}", "--cpus", "2"],
+        ["modifyvm", "{{ .Name }}", "--memory", "2048"]
       ],
       "hard_drive_interface": "sata",
       "disk_size": 51200,
@@ -23,7 +25,7 @@
       "boot_command": [
         "<enter><wait10><wait10>",
         "user<enter>live<enter><wait>",
-        "wget -qO- http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh-daemon.sh|sudo sh<enter><wait>",
+        "wget -qO- http://{{ .HTTPIP }}:{{ .HTTPPort }}/configure-ssh-daemon.sh | sudo sh<enter><wait>",
         "exit<enter>"
       ],
       "boot_wait": "5s",
@@ -33,7 +35,19 @@
       "ssh_wait_timeout": "5s",
       "http_directory": "setup/",
       "output_directory": "packer_build/",
-      "shutdown_command": "echo '{{ user `login_pass` }}'|sudo -S /sbin/halt -h -p"
+      "shutdown_command": "echo '{{ user `login_pass` }}' | sudo -S /sbin/halt -h -p"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "setup/install-ansible.sh",
+      "execute_command": "chmod +x '{{ .Path }}'; {{ .Vars }} '{{ .Path }}'",
+      "override": {
+        "virtualbox-iso": {
+          "execute_command": "chmod +x '{{ .Path }}'; echo '{{ user `login_pass` }}' | {{ .Vars }} sudo -S '{{ .Path }}'"
+        }
+      }
     }
   ]
 }
