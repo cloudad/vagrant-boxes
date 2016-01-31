@@ -1,0 +1,12 @@
+---
+- name: collect distribution info
+  debug:
+    var: item
+  with_dict:
+    origin: '{{ bootstrap_origin }}'
+    codename: '{{ bootstrap_codename }}'
+    architecture: '{{ bootstrap_architecture }}'
+    mirror: '{{ bootstrap_mirror }}'
+    variant: '{{ bootstrap_variant }}'
+    components: '{{ bootstrap_components }}'
+    archives: '{{ bootstrap_archives }}'

@@ -1,0 +1,56 @@
+---
+- name: install gnu parted
+  apt:
+    name: parted
+    state: present
+
+- name: link mkswap as mkfs filesystem type
+  file:
+    src: /sbin/mkswap
+    dest: /sbin/mkfs.swap
+    state: link
+
+- name: create partition table
+  command: >
+    parted
+      -s
+      -a optimal
+      {{ partition_device }}
+      mktable
+        {{ partition_table_type }}
+  when: partition_table_type is not none
+
+- name: create partition
+  command: >
+    parted
+      -s
+      -a optimal
+      {{ partition_device }}
+      mkpart
+        {{ item.partition.type }}
+        {{ item.partition.fstype }}
+        {{ item.partition.start }}
+        {{ item.partition.end }}
+  with_items: '{{ partition_table }}'
+  when: item.partition|default()
+
+- name: create filesystem
+  filesystem:
+    dev: '{{ item.partition.device }}'
+    force: yes
+    fstype: '{{ item.filesystem.type }}'
+    opts: '{{ item.filesystem.options|default(omit, true) }}'
+  with_items: '{{ partition_table }}'
+  when: item.filesystem|default()
+
+- name: create mountpoint
+  mount:
+    name: '{{ partition_mountpoint_prefix ~ item.mountpoint.target}}'
+    src: '{{ item.partition.device }}'
+    fstype: '{{ item.filesystem.type }}'
+    opts: '{{ item.mountpoint.options }}'
+    dump: '{{ item.mountpoint.dump|default(0, true) }}'
+    passno: '{{ item.mountpoint.pass|default(0, true) }}'
+    state: mounted
+  with_items: '{{ partition_table }}'
+  when: item.mountpoint|default()

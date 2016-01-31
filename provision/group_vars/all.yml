@@ -1,0 +1,48 @@
+---
+partition_device: /dev/sda
+partition_mountpoint_prefix: /target
+partition_table_type: msdos
+partition_table:
+  # boot
+  - partition:
+      device: /dev/sda1
+      type: primary
+      fstype: ext4
+      # size: 1 GiB
+      start: 0%
+      end: 1G
+    filesystem:
+      type: ext4
+      options: '-L boot'
+    mountpoint:
+      target: /boot
+      options: noatime,nodiratime,relatime
+      pass: 2
+  # swap
+  - partition:
+      device: /dev/sda2
+      type: primary
+      fstype: linux-swap
+      # size: 4 GiB
+      start: 1G
+      end: 5G
+    filesystem:
+      type: swap
+      options: '-L swap'
+  # root
+  - partition:
+      device: /dev/sda3
+      type: primary
+      fstype: ext4
+      # size: max
+      start: 5G
+      end: 100%
+    filesystem:
+      type: ext4
+      options: '-L root'
+    mountpoint:
+      target: /
+      options: noatime,nodiratime,relatime
+      pass: 1
+
+bootstrap_architecture: amd64

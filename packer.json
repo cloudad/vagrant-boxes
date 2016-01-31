@@ -2,7 +2,8 @@
   "variables": {
     "headless": "true",
     "login_user": "user",
-    "login_pass": "live"
+    "login_pass": "live",
+    "distribution": "ubuntu-trusty"
   },
   "builders": [
     {
@@ -46,6 +47,17 @@
       "override": {
         "virtualbox-iso": {
           "execute_command": "chmod +x '{{ .Path }}'; echo '{{ user `login_pass` }}' | {{ .Vars }} sudo -S '{{ .Path }}'"
+        }
+      }
+    },
+    {
+      "type": "ansible-local",
+      "playbook_dir": "provision/",
+      "playbook_file": "provision/virtual-machine.yml",
+      "inventory_file": "provision/distributions/{{ user `distribution` }}",
+      "override": {
+        "virtualbox-iso": {
+          "command": "echo '{{ user `login_pass` }}' | sudo -S ansible-playbook"
         }
       }
     }
